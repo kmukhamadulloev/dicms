@@ -1,0 +1,24 @@
+POST api.php
+
+action=get_posts               # required
+
+type=project                   # optional, default = '', allowed = { blog | work | project}
+limit=5                        # optional, default = 0, allowed = any number : when limit = 0 => returns all entries
+extended=1                     # optional, default = 0, allowed = { 0 | 1 } : when extended = 1 => returns post content
+search=''                      # optional, default = '', allowed = any string : search entries by title
+id=0                           # optional, default = 0, allowed = any number : returns entry by id, if id > 0
+
+-------
+
+POST api.php
+
+action=get_page
+
+id=1                           # required, allowed = any number
+type={blog | work | project}   # optional, default = '', allowed = { blog | work | project}
+
+-------
+
+POST api.php
+
+action=about
