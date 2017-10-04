@@ -1,6 +1,8 @@
+"use strict";
+
 const ajax = data => {
 	return new Promise((resolve, reject) => {
-		let fData = new FormData();
+		const fData = new FormData();
 		
 		for (let item in data) {
 			fData.append(item, data[item]);
@@ -40,7 +42,7 @@ const initHead = _ => {
 	document.querySelectorAll('#head-menu-wrapper>li>a').forEach(elem => {
 		elem.addEventListener('click', ev => {
 			ev.preventDefault();
-			let chosenTab = elem.href.replace(/([^#]*)#/, '');
+			const chosenTab = elem.href.replace(/([^#]*)#/, '');
 			
 			setTab(chosenTab);
 		});
@@ -48,12 +50,12 @@ const initHead = _ => {
 }
 
 const setTab = chosenTab => {
-	console.log(chosenTab);
-			
 	setHash(`tab=${chosenTab}`);
 	
-	if (chosenTab === 'home') {
-		loadActiveProjects();
+	switch (chosenTab) {
+		case 'home':
+			loadActiveProjects();
+			break;
 	}
 }
 
@@ -61,10 +63,7 @@ const initPageLinks = _ => {
 	document.querySelectorAll('[data-link]').forEach(elem => {
 		elem.addEventListener('click', ev => {
 			ev.preventDefault();
-			let pageId = elem.dataset.link.replace(/page=/, '');
-			
-			console.log('page', pageId);
-			
+			const pageId = elem.dataset.link.replace(/page=/, '');
 			loadPageById(pageId);
 		});
 	});
@@ -78,7 +77,7 @@ const loadError = error => {
 
 const loadMessage = _ => {
 	$('.mainpage').innerHTML = `
-		<div class="loader"><h3>Loading page</h3><p>Please wait, motherfucker.</p></div>
+		<div class="loader"><h3>Loading page</h3><p>Please wait</p></div>
 	`;
 }
 
@@ -87,8 +86,6 @@ const loadPageById = id => {
 	
 	ajax({action: 'get_page', id: id})
 	.then(d => {
-		console.log(d);
-		
 		$('.mainpage').innerHTML = '';
 		
 		if (!('data' in d) || typeof d.data[0] === 'undefined') {
@@ -128,8 +125,7 @@ const loadActiveProjects = _ => {
 		const minCard = values[2];
 		
 		let cards = [];
-		
-		
+
 		d.data.forEach(item => {
 			cards.push( minCard
 								.replace(/%id%/g, item.id)
@@ -181,13 +177,11 @@ const getTemplate = name => {
 		ajax({action: 'get_template', name: name})
 		.then(d => {
 			if (!('data' in d) || typeof d.data[0] === 'undefined') {
-				// loadError("Page is not found");
 				console.warn("Template is unreadable, no data", d);
 				reject(new Error("Template is unreadable, no data"));
 				return;
 			}
-			
-			// console.log(d.data);
+
 			resolve(d.data);
 		})
 		.catch(e => {
@@ -202,5 +196,3 @@ document.addEventListener('DOMContentLoaded', _ => {
 	
 	window.addEventListener('hashchange', checkHash, false);
 });
-
-
