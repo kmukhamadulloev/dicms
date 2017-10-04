@@ -261,7 +261,6 @@
 			return $answer;
 		} catch (PDOException $e) {
 			throw new Exception("Database returned an error: " . $e->getMessage());
-			return false;
 		}
 	}
 	
