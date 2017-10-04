@@ -4,11 +4,36 @@
 	require(__DIR__ . "/db.connect.php");
 	require(__DIR__ . "/functions.php");
 	
+	class ApiResult {
+		public $result;
+		public $data;
+		
+		public function __construct() {
+			$this->setResult(false);
+			$this->setData('No action defined');
+			return $this;
+		}
+		
+		public function setResult(bool $result) {
+			$this->result = $result;
+			return $this;
+		}
+		
+		public function setData($data) {
+			$this->data = $data;
+			return $this;
+		}
+		
+		public function print() {
+			echo json_encode([
+				'result' => $this->result ? 'success' : 'error',
+				'data'   => $this->data
+			], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+		}
+	}
+	
 	header("Content-type: application/json");
-	$response = array(
-		'result' => 'error',
-		'data'   => 'No action defined'
-	);
+	$response = new ApiResult();
 	
 	if (!empty($_POST['action'])) {
 		switch ($_POST['action']) {
@@ -19,26 +44,31 @@
 				$extended = isset($_POST['extended']) ? intval($_POST['extended']) : 0;
 				
 				$searchResult = getListPosts($limit, $type, $extended, $search);
-				$response['result'] = $searchResult === false ? 'error' : 'success';
-				$response['data'] = $searchResult;
+				try {
+					$response->setResult(!!$searchResult);
+					$response->setData($searchResult);
+				} catch (Exception $e) {
+					$response->setResult(false);
+					$response->setData($e->getMessage);
+				}
 				break;
 			case 'get_page':
 				$id = isset($_POST['id']) ? intval($_POST['id']) : 0;
 				$type = isset($_POST['type']) ? htmlspecialchars($_POST['type']) : '';
 				
 				if ($id <= 0) {
-					$response['result'] = 'error';
-					$response['data'] = "'id' is not defined";
+					$response->setResult(false);
+					$response->setData("'id' is not defined");
 				} else {
 					$searchResult = getPostById($id, $type);
-					$response['result'] = $searchResult === false ? 'error' : 'success';
-					$response['data'] = $searchResult;
+					$response->setResult(!!$searchResult);
+					$response->setData($searchResult);
 				}
 				break;
 			case 'lastActiveProjects':
 				$searchResult = getListPosts(4, '', 0);
-				$response['result'] = 'success';
-				$response['data'] = $searchResult;
+				$response->setResult(true);
+				$response->setData($searchResult);
 				break;
 			case 'lastArchivedProjects':
 			
@@ -72,24 +102,23 @@
 
 				try {
 					$result = getTemplate($name);
-					$response['result'] = $result === false ? 'error' : 'success';
-					$response['data'] = $result;
+					$response->setResult(!!$result);
+					$response->setData($result);
 				} catch (Exception $e) {
-					$response['result'] = 'error';
-					$response['data'] = $e->getMessage();
+					$response->setResult(false);
+					$response->setData($e->getMessage());
 				}
 
 				break;
 			default:
-				$response['result'] = 'ERROR';
-				$response['data'] = 'Unknown action';
+				$response->setResult(false);
+				$response->setData('Unknown action');
 				break;
 		}
 	} else {
-		$response['result'] = 'ERROR';
-		$response['data'] = 'No action defined';
+		$response->setResult(false);
+		$response->setData('No action defined');
 	}
-	
-	echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
+	$response->print();
 ?>
